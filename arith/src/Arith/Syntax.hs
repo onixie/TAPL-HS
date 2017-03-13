@@ -1,14 +1,20 @@
+{-# Language RankNTypes #-}
+
 module Arith.Syntax
     ( Term (..),
       Info (..),
       isNumericalVal,
       isVal,
-      NoRuleApplies (..)
+      Error (..)
     ) where
 
 -- Syntax
+class (Show i, Eq i) => Info i where
+    dummy :: i
 
-data Info = DummyInfo deriving (Show, Eq)
+data Error i = 
+      WrongSyntax i
+    | NoRuleApplies i deriving (Show, Eq)
 
 data Term info = 
       TmTrue info
@@ -19,8 +25,6 @@ data Term info =
     | TmPred info (Term info)
     | TmIsZero info (Term info)
     deriving (Show, Eq)
-
-data NoRuleApplies = NoRuleApplies deriving (Show, Eq)
 
 isNumericalVal t = case t of
     TmZero _ -> True
