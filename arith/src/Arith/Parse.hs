@@ -17,10 +17,10 @@ import Text.Parsec
 
 data ParseInfo = 
       ParseInfo SourcePos 
-    | DummyInfo deriving (Show, Eq)
+    | NoInfo deriving (Show, Eq)
 
 instance Info ParseInfo where
-    dummy = DummyInfo
+    dummy = NoInfo
 
 terms = many1 term
 

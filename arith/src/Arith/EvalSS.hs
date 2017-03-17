@@ -26,7 +26,7 @@ eval1 t fi = case t of
     TmPred _ (TmZero _) -> return $ TmZero dummy
     TmPred _ (TmSucc _ nv1) | isNumericalVal nv1 -> return nv1
     TmPred fi t1 -> case eval1 t1 fi of
-                        Right t1' -> return $ TmPred fi t1
+                        Right t1' -> return $ TmPred fi t1'
                         error -> error
     TmIsZero _ (TmZero _) -> return $ TmTrue dummy
     TmIsZero _ (TmSucc _ nv1) | isNumericalVal nv1 -> return $ TmFalse dummy
