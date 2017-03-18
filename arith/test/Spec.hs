@@ -22,23 +22,30 @@ instance Arbitrary DummyInfo where
 
 instance Arbitrary (Term DummyInfo) where
     arbitrary = sized term
-        where term 0 = oneof [ TmFalse <$> arbitrary
+        where term 1 = oneof [ TmFalse <$> arbitrary
                              , TmTrue <$> arbitrary
                              , TmZero <$> arbitrary
                              ]
-              term n | n > 0 = 
-                       oneof [ TmFalse <$> arbitrary
-                             , TmTrue <$> arbitrary
-                             , TmZero <$> arbitrary
-                             , TmSucc <$> arbitrary <*> (subterm n)
+              term n | n > 1 = 
+                       oneof [ TmSucc <$> arbitrary <*> (subterm n)
                              , TmPred <$> arbitrary <*> (subterm n)
                              , TmIsZero <$> arbitrary <*> (subterm n)
                              , TmIf <$> arbitrary <*> (subterm n) <*> (subterm n) <*> (subterm n)
                              ]
-                where subterm n = term (n - 1)
+                where subterm n = term (n `div` 2)
+
+ssEqualBs :: Term DummyInfo -> Property
+ssEqualBs arb = collect (depth arb)
+              $ classify (good ss) "good"
+              $ classify (not (good ss)) "bad"
+              $ ss == bs
+    where ss = SS.eval arb
+          bs = BS.eval arb
 
 good (Right _) = True
 good _ = False
+
+bothGood t = good (BS.eval t) && good (SS.eval t)
 
 depth :: Info i => Term i -> Int
 depth (TmFalse _) = 1
@@ -52,14 +59,8 @@ depth (TmIf _ t1 t2 t3) = 1 + (depth t1 `max` depth t2 `max` depth t3)
 -- properties
 prop_ifZero = evalBy BS.eval "if ?0 false true" == evalBy SS.eval "if ?0 false true"
 prop_succTo4 = evalBy BS.eval "1+1+1+1+0" == evalBy SS.eval "1+1+1+1+0"
-prop_arbitrary = forAll arbitrary ssEqualBs
-    where 
-    ssEqualBs :: Term DummyInfo -> Property
-    ssEqualBs arb = collect (depth arb)
-                  $ classify (good ss) "good" 
-                  $ ss == bs
-        where ss = SS.eval arb
-              bs = BS.eval arb
+prop_arbitrary_good = forAll (arbitrary `suchThat` bothGood) ssEqualBs
+prop_arbitrary_bad = forAll (arbitrary `suchThat` (not . bothGood)) ssEqualBs
 
 -- runTests
 return []
