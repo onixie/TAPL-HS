@@ -57,8 +57,8 @@ depth (TmPred _ t1) = 1 + depth t1
 depth (TmIf _ t1 t2 t3) = 1 + (depth t1 `max` depth t2 `max` depth t3)
 
 -- properties
-prop_ifZero = evalBy BS.eval "if ?0 false true" == evalBy SS.eval "if ?0 false true"
-prop_succTo4 = evalBy BS.eval "1+1+1+1+0" == evalBy SS.eval "1+1+1+1+0"
+prop_ifZero = once $ evalBy BS.eval "if ?0 false true" == evalBy SS.eval "if ?0 false true"
+prop_succTo4 = once $ evalBy BS.eval "1+1+1+1+0" == evalBy SS.eval "1+1+1+1+0"
 prop_arbitrary_good = forAll (arbitrary `suchThat` bothGood) ssEqualBs
 prop_arbitrary_bad = forAll (arbitrary `suchThat` (not . bothGood)) ssEqualBs
 
